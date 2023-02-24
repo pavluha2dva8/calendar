@@ -1,0 +1,73 @@
+{
+  "plugins": ["import", "only-warn", "prettier"],
+  "extends": ["plugin:prettier/recommended" ,"next"],
+  "rules": {
+    "no-console": [
+      "warn", { "allow": [
+        "info", " warn", "error"
+      ] }],
+    "no-unused-vars": [
+      "warn",
+      {
+        "args": "after-used",
+        "argsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "no-restricted-imports": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "trailingComma": "all",
+        "printWidth": 100,
+        "tabWidth": 2,
+        "useTabs": false,
+        "semi": false,
+        "singleQuote": true
+      }
+    ],
+    "import/order": [
+      "warn",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "pathGroups": [
+          {
+            "pattern": "~/**",
+            "group": "internal",
+            "position": "after"
+          },
+          {
+            "pattern": "./*.scss",
+            "group": "sibling",
+            "position": "after"
+          }
+        ],
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
+    "import/no-duplicates": "warn",
+    "react/display-name": "off",
+    "react/jsx-key": [
+      "warn",
+      {
+        "checkFragmentShorthand": true,
+        "checkKeyMustBeforeSpread": true,
+        "warnOnDuplicates": true
+      }
+    ],
+    "react/jsx-uses-react": "off",
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off"
+  }
+}
