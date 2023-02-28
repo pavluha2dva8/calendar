@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import useTasksStore from '@/src/store/store'
 import { Label } from '@/src/types'
 
-type Props = {
+interface Props {
   date: Date
   visible: boolean
   closeModal: () => void

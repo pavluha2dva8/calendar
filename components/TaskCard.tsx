@@ -4,7 +4,7 @@ import { Draggable } from 'react-beautiful-dnd'
 import EditTaskModal from '@/components/EditTaskModal'
 import { Task } from '@/src/types'
 
-type Props = {
+interface Props {
   task: Task
   index: number
 }
