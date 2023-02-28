@@ -10,3 +10,8 @@ export interface Label {
   text: string
   color: string
 }
+
+export interface Holiday {
+  date: string
+  name: string
+}

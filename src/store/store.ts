@@ -1,8 +1,10 @@
 import { create } from 'zustand'
-import { Label, Task } from '@/src/types'
+import { Holiday, Label, Task } from '@/src/types'
 
 type State = {
   tasks: Task[]
+  holidays: Holiday[]
+  setHolidays: (holidays: Holiday[]) => void
   setTasks: (tasks: Task[]) => void
   addTask: (task: Task) => void
   editTask: (task: Task) => void
@@ -66,6 +68,8 @@ const useTasksStore = create<State>((set) => ({
       labels: [],
     },
   ],
+  holidays: [],
+  setHolidays: (holidays) => set({ holidays }),
   setTasks: (tasks) => set({ tasks }),
   addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
   editTask: (task) =>
