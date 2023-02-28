@@ -1,10 +1,14 @@
 'use client'
 import styled from '@emotion/styled'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DragDropContext, DropResult } from 'react-beautiful-dnd'
+import useSWR from 'swr'
+import CalendarExport from '@/components/CalendarExport'
+import CalendarImageDownload from '@/components/CalendarImageDownload'
+import CalendarImport from '@/components/CalendarImport'
 import useTasksStore from '@/src/store/store'
 import { Task } from '@/src/types'
-import { getStrDate } from '@/src/utils'
+import { daysOfWeek, fetcher, getStrDate } from '@/src/utils'
 import CalendarCell from './CalendarCell'
 
 const Grid = styled.div`
@@ -37,6 +41,7 @@ const ArrowContainer = styled.div`
   margin: 0 16px;
   cursor: pointer;
 `
+
 const ArrowButton = styled.button`
   width: 26px;
   height: 26px;
@@ -57,10 +62,46 @@ const ArrowButton = styled.button`
   }
 `
 
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+`
+
+const SearchLabel = styled.label`
+  font-size: 1.2rem;
+  font-weight: bold;
+`
+
+const SearchInput = styled.input`
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 1.2rem;
+  width: 300px;
+  transition: box-shadow 0.2s ease-in-out;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+`
+
 const CalendarGrid = () => {
-  const tasks = useTasksStore((state) => state.tasks)
-  const setTasks = useTasksStore((state) => state.setTasks)
+  const [search, setSearch] = useState('')
   const [currentMonthYear, setCurrentMonthYear] = useState(new Date())
+  const setTasks = useTasksStore((state) => state.setTasks)
+  const setHolidays = useTasksStore((state) => state.setHolidays)
+
+  const tasks = useTasksStore((state) => state.tasks).filter((task) => {
+    const isTitleMatched = task.title.toLowerCase().includes(search.toLowerCase())
+    const isLabelMatched = task.labels.some((label) =>
+      label.text.toLowerCase().includes(search.toLowerCase()),
+    )
+    return isTitleMatched || isLabelMatched
+  })
 
   const renderCells = () => {
     const year = currentMonthYear.getFullYear()
@@ -69,7 +110,6 @@ const CalendarGrid = () => {
     const daysInMonth = new Date(year, month + 1, 0).getDate()
     const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1)
 
-    const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     const dayOfWeekCells = daysOfWeek.map((dayOfWeek) => (
       <DayOfWeek key={dayOfWeek}>{dayOfWeek}</DayOfWeek>
     ))
@@ -122,6 +162,10 @@ const CalendarGrid = () => {
     setCurrentMonthYear(new Date(currentMonthYear.getFullYear(), currentMonthYear.getMonth() + 1))
   }
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value)
+  }
+
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result
 
@@ -161,6 +205,18 @@ const CalendarGrid = () => {
     setTasks(Object.values(tasksByDay).flat())
   }
 
+  const { data } = useSWR('https://date.nager.at/api/v3/NextPublicHolidaysWorldwide', fetcher)
+
+  useEffect(() => {
+    if (data) {
+      const holidays = data.map(({ date, name }: { date: string; name: string }) => ({
+        date,
+        name,
+      }))
+      setHolidays(holidays)
+    }
+  }, [data, setHolidays])
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <MonthYearContainer>
@@ -168,14 +224,26 @@ const CalendarGrid = () => {
           <ArrowButton>{'<'}</ArrowButton>
         </ArrowContainer>
         <MonthYearText>
-          {currentMonthYear.toLocaleString('default', { month: 'long' })}
+          {currentMonthYear.toLocaleString('default', { month: 'long' })}{' '}
           {currentMonthYear.getFullYear()}
         </MonthYearText>
         <ArrowContainer onClick={nextMonth}>
           <ArrowButton>{'>'}</ArrowButton>
         </ArrowContainer>
       </MonthYearContainer>
-      <Grid>{renderCells()}</Grid>
+      <SearchContainer>
+        <SearchLabel>Search:</SearchLabel>
+        <SearchInput
+          type="text"
+          placeholder="Search tasks"
+          value={search}
+          onChange={handleSearchChange}
+        />
+        <CalendarExport />
+        <CalendarImport />
+        <CalendarImageDownload />
+      </SearchContainer>
+      <Grid id={'calendar-grid'}>{renderCells()}</Grid>
     </DragDropContext>
   )
 }
